@@ -18,6 +18,7 @@
 
 package plugily.projects.villagedefense.events;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -132,7 +133,7 @@ public class PluginEvents implements Listener {
       if(ironGolem.getCustomName() != null && ironGolem.getCustomName().contains(event.getPlayer().getName())) {
         VersionUtils.setPassenger(event.getRightClicked(), event.getPlayer());
       } else {
-        new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_GOLEM_CANT_RIDE_OTHER").asKey().player(event.getPlayer()).sendPlayer();
+        new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_WAVE_ENTITIES_CANT_RIDE_OTHER").asKey().player(event.getPlayer()).sendPlayer();
       }
     } else if(event.getRightClicked().getType() == XEntityType.WOLF.get()) {
       Wolf wolf = (Wolf) event.getRightClicked();
@@ -220,12 +221,18 @@ public class PluginEvents implements Listener {
       return;
     }
     for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-      if (!arena.getEnemies().contains(event.getEntity())
+        //noinspection SuspiciousMethodCalls
+        if (!arena.getEnemies().contains(event.getEntity())
           && !arena.getWolves().contains(event.getEntity())) {
         continue;
       }
       event.setCancelled(false);
-      event.getEntity().setCustomName(CreatureUtils.getHealthNameTagPreDamage((Creature) event.getEntity(), event.getFinalDamage()));
+        try {
+            event.getEntity().customName(Component.text(CreatureUtils.getHealthNameTagPreDamage((Creature) event.getEntity(), event.getFinalDamage())));
+        }
+        catch (Exception ex) {
+            plugin.getLogger().warning("Failed to update creature health name tag: " + ex.getMessage());
+        }
     }
   }
 

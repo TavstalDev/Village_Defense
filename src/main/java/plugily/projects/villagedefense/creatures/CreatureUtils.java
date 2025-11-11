@@ -26,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Wolf;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
@@ -150,7 +151,12 @@ public class CreatureUtils {
     } else {
       hpColor = ChatColor.RED;
     }
-    String name = creature.getMetadata(creatureInitializer.getCreatureCustomNameMetadata()).get(0).asString();
+
+    List<MetadataValue> metadata = creature.getMetadata(creatureInitializer.getCreatureCustomNameMetadata());
+    if (metadata.isEmpty()) {
+      return hpColor + "" + ChatColor.BOLD + "" + Math.round(health) + ChatColor.GREEN + "" + ChatColor.BOLD + "/" + Math.round(maxHealth) + " ❤";
+    }
+    String name = metadata.get(0).asString();
     return name + " " + hpColor + "" + ChatColor.BOLD + "" + Math.round(health) + ChatColor.GREEN + "" + ChatColor.BOLD + "/" + Math.round(maxHealth) + " ❤";
   }
 
