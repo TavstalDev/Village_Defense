@@ -78,34 +78,54 @@ public class RideableCreatureEvents {
   private void handleSteer(PacketEvent event, Entity vehicle) {
     Player player = event.getPlayer();
     PacketContainer packet = event.getPacket();
-    //https://wiki.vg/Protocol#Player_Input
-    float sideways = packet.getFloat().read(0);
-    float forward = packet.getFloat().read(1);
-    boolean jump = packet.getBooleans().read(0);
-    boolean unmount = packet.getBooleans().read(1);
-    if(unmount) {
-      return;
-    }
-    Location location = player.getLocation();
-    double radians = Math.toRadians(location.getYaw());
-    double x = -forward * Math.sin(radians) + sideways * Math.cos(radians);
-    double z = forward * Math.cos(radians) + sideways * Math.sin(radians);
-    Vector velocity = new Vector(x, 0.0, z).normalize().multiply(0.5);
-    velocity.setY(vehicle.getVelocity().getY());
-    if(!Double.isFinite(velocity.getX())) {
-      velocity.setX(0);
-    }
-    if(!Double.isFinite(velocity.getZ())) {
-      velocity.setZ(0);
-    }
-    if(jump && vehicle.isOnGround()) {
-      velocity.setY(0.5);
-    }
     try {
-      velocity.checkFinite();
-      vehicle.setVelocity(velocity);
-    } catch(Exception ignored) {
+        //https://wiki.vg/Protocol#Player_Input
+        float sideways = 0;
+        try {
+            sideways = packet.getFloat().read(0);
+        } catch (Exception ignored) {
+        }
+        float forward = 0;
+        try {
+            forward = packet.getFloat().read(1);
+        } catch (Exception ignored) {
+        }
+        boolean jump = false;
+        try {
+            jump = packet.getBooleans().read(0);
+        } catch (Exception ignored) {
+        }
+        boolean unmount = false;
+        try {
+            unmount = packet.getBooleans().read(1);
+        } catch (Exception ignored) {
+        }
+        if (unmount) {
+            return;
+        }
+        Location location = player.getLocation();
+        double radians = Math.toRadians(location.getYaw());
+        double x = -forward * Math.sin(radians) + sideways * Math.cos(radians);
+        double z = forward * Math.cos(radians) + sideways * Math.sin(radians);
+        Vector velocity = new Vector(x, 0.0, z).normalize().multiply(0.5);
+        velocity.setY(vehicle.getVelocity().getY());
+        if (!Double.isFinite(velocity.getX())) {
+            velocity.setX(0);
+        }
+        if (!Double.isFinite(velocity.getZ())) {
+            velocity.setZ(0);
+        }
+        if (jump && vehicle.isOnGround()) {
+            velocity.setY(0.5);
+        }
+        try {
+            velocity.checkFinite();
+            vehicle.setVelocity(velocity);
+        } catch (Exception ignored) {
+        }
+    }
+    catch (Exception ex) {
+        plugin.getLogger().warning("Failed to handle rideable creature steering packet: " + ex.getMessage());
     }
   }
-
 }
