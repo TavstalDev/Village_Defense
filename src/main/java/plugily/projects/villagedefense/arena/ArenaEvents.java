@@ -186,39 +186,44 @@ public class ArenaEvents extends PluginArenaEvents {
 
   @EventHandler
   public void onVillagerDeath(EntityDeathEvent event) {
-    LivingEntity entity = event.getEntity();
-    if(!(entity instanceof Creature)) {
-      return;
-    }
-    for(Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
-      if(event.getEntityType() == XEntityType.VILLAGER.get()) {
-        if(!arena.getVillagers().contains(entity)) {
-          continue;
-        }
-        arena.getStartLocation().getWorld().strikeLightningEffect(entity.getLocation());
-        arena.removeVillager((Villager) entity);
-        plugin.getRewardsHandler().performReward(null, arena, plugin.getRewardsHandler().getRewardType("VILLAGER_DEATH"));
-        plugin.getHolidayManager().applyHolidayDeathEffects(entity);
-        new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_VILLAGER_DIED").asKey().arena(arena).sendArena();
-      } else if(ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_8_8)) {
-        if(!arena.getEnemies().contains(entity)) {
-          continue;
-        }
-        arena.removeEnemy((Creature) entity);
-        arena.changeArenaOptionBy("TOTAL_KILLED_ZOMBIES", 1);
-
-        Player killer = entity.getKiller();
-        Arena killerArena = plugin.getArenaRegistry().getArena(killer);
-
-        if(killerArena != null) {
-          plugin.getUserManager().addStat(killer, plugin.getStatsStorage().getStatisticType("KILLS"));
-          plugin.getUserManager().addExperience(killer, 2 * arena.getArenaOption("CREATURE_DIFFICULTY_MULTIPLIER"));
-          plugin.getRewardsHandler().performReward(killer, plugin.getRewardsHandler().getRewardType("ZOMBIE_KILL"));
-          plugin.getPowerupRegistry().spawnPowerup(entity.getLocation(), killerArena);
-        }
+      LivingEntity entity = event.getEntity();
+      if (!(entity instanceof Creature)) {
+          return;
       }
-      break;
-    }
+
+      for (Arena arena : plugin.getArenaRegistry().getPluginArenas()) {
+          if (event.getEntityType() == XEntityType.WOLF.get() || event.getEntityType() == XEntityType.IRON_GOLEM.get() || event.getEntityType() == XEntityType.SNOW_GOLEM.get())
+              continue;
+
+          if (event.getEntityType() == XEntityType.VILLAGER.get()) {
+              if (!arena.getVillagers().contains(entity)) {
+                  continue;
+              }
+              arena.getStartLocation().getWorld().strikeLightningEffect(entity.getLocation());
+              arena.removeVillager((Villager) entity);
+              plugin.getRewardsHandler().performReward(null, arena, plugin.getRewardsHandler().getRewardType("VILLAGER_DEATH"));
+              plugin.getHolidayManager().applyHolidayDeathEffects(entity);
+              new MessageBuilder("IN_GAME_MESSAGES_VILLAGE_VILLAGER_DIED").asKey().arena(arena).sendArena();
+              break;
+          } else {
+              if (!arena.getEnemies().contains(entity)) {
+                  continue;
+              }
+              arena.removeEnemy((Creature) entity);
+              arena.changeArenaOptionBy("TOTAL_KILLED_ZOMBIES", 1);
+
+              Player killer = entity.getKiller();
+              Arena killerArena = plugin.getArenaRegistry().getArena(killer);
+
+              if (killerArena != null) {
+                  plugin.getUserManager().addStat(killer, plugin.getStatsStorage().getStatisticType("KILLS"));
+                  plugin.getUserManager().addExperience(killer, 2 * arena.getArenaOption("CREATURE_DIFFICULTY_MULTIPLIER"));
+                  plugin.getRewardsHandler().performReward(killer, plugin.getRewardsHandler().getRewardType("ZOMBIE_KILL"));
+                  plugin.getPowerupRegistry().spawnPowerup(entity.getLocation(), killerArena);
+              }
+              break;
+          }
+      }
   }
 
   @EventHandler(priority = EventPriority.HIGH)
